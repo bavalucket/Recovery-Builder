@@ -21,6 +21,7 @@ Here are some useful notes to using this tool brewed with black magic.
 Update : If you don't understand the manifest variable, check [this](https://github.com/Area69Lab/Recovery-builder/blob/master/guide.md)
 
 Some variables that you'd like to set
+
 **new:** ```DEVICE_PATH_NAME : Simply the code name of your device (eg: r7), fixes a bug where the builder doesn't know where the hell to get the recovery.img from```
 
 ```MANIFEST : Link to your recovery manifest, Google it if you don't know what this is```
