@@ -1,15 +1,6 @@
 name: Building recovery
 
 on:
-#  release:
-#    types: [published]
-#  push:
-#    branches:
-#      - master
-#    paths:
-#      - '.config'
-#  schedule:
-#    - cron: 0 8 * * 5
   workflow_dispatch:
 
 env:
@@ -18,7 +9,7 @@ env:
   DT_LINK: https://github.com/bavalucket/android_device_samsung_r7
   DT_PATH: device/samsung/r7
   TARGET: recoveryimage
-  TZ: Asia/manila
+  TZ: Asia/Manila
 
 jobs:
   build:
@@ -28,14 +19,13 @@ jobs:
        - name: Checkout
          uses: actions/checkout@master
          
-
        - name: Initializing environment
          run: |
             git config --global user.name "bavalucket"
             git config --global user.email "americanking073@gmail.com"
             sudo -E apt-get clean
             sudo -E apt-get -qq update
-            sudo -E apt-get -qq install bc build-essential zip curl libstdc++6 git wget python gcc clang libssl-dev repo rsync flex curl  bison aria2
+            sudo -E apt-get -qq install bc build-essential zip curl libstdc++6 git wget python gcc clang libssl-dev repo rsync flex curl bison aria2
             sudo curl --create-dirs -L -o /usr/local/bin/repo -O -L https://storage.googleapis.com/git-repo-downloads/repo
             sudo chmod a+rx /usr/local/bin/repo
             
@@ -45,20 +35,19 @@ jobs:
              cd work
              repo init -u $MANIFEST --depth=1
              repo sync -c -j4 --force-sync --no-clone-bundle --no-tags
-             repo sync -c -j4 --force-sync --no-clone-bundle --no-tags
              git clone --depth=1 $DT_LINK $DT_PATH
              
        - name: Build
          run: |
               cd work
-              . build/envsetup.sh &&lunch omni_$DEVICE-eng &&export ALLOW_MISSING_DEPENDENCIES=true && mka $TARGET
+              . build/envsetup.sh && lunch omni_$DEVICE-eng && export ALLOW_MISSING_DEPENDENCIES=true && mka $TARGET
              
        - name: Release recovery image
          uses: softprops/action-gh-release@v1
          env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
          with:
-          tag_name: TWRP_10.0
-          name: TWRP-r7
-          files: | 
-            work/out/target/product/r7/recovery.img
+           tag_name: TWRP_10.0
+           name: TWRP-r7
+           files: | 
+             work/out/target/product/r7/recovery.img
