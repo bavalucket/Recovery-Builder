@@ -12,42 +12,57 @@ env:
   TZ: Asia/Manila
 
 jobs:
+  free-disk-space:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
+  
   build:
     runs-on: ubuntu-latest
+    needs: free-disk-space
 
     steps:
-       - name: Checkout
-         uses: actions/checkout@master
-         # i love open source projects lmao
-       - name: Initializing environment
-         run: |
-            git config --global user.name "bavalucket"
-            git config --global user.email "americanking073@gmail.com"
-            sudo -E apt-get clean
-            sudo -E apt-get -qq update
-            sudo -E apt-get -qq install bc build-essential zip curl libstdc++6 git wget python3 gcc clang libssl-dev repo rsync flex curl bison aria2
-            sudo curl --create-dirs -L -o /usr/local/bin/repo -O -L https://storage.googleapis.com/git-repo-downloads/repo
-            sudo chmod a+rx /usr/local/bin/repo
-            
-       - name: Sync recovery source and device tree
-         run: |
-             mkdir work
-             cd work
-             repo init -u $MANIFEST --depth=1
-             repo sync -c -j4 --force-sync --no-clone-bundle --no-tags
-             git clone --depth=1 $DT_LINK $DT_PATH
-             
-       - name: Build
-         run: |
-              cd work
-              . build/envsetup.sh && lunch omni_$DEVICE-eng && export ALLOW_MISSING_DEPENDENCIES=true && mka $TARGET
-             
-       - name: Release recovery image
-         uses: softprops/action-gh-release@v1
-         env:
-           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-         with:
-           tag_name: TWRP_10.0
-           name: TWRP-r7
-           files: | 
-             work/out/target/product/r7/recovery.img
+      - name: Checkout
+        uses: actions/checkout@master
+
+      - name: Initializing environment
+        run: |
+          git config --global user.name "bavalucket"
+          git config --global user.email "americanking073@gmail.com"
+          sudo -E apt-get clean
+          sudo -E apt-get -qq update
+          sudo -E apt-get -qq install bc build-essential zip curl libstdc++6 git wget python3 gcc clang libssl-dev repo rsync flex curl bison aria2
+          sudo curl --create-dirs -L -o /usr/local/bin/repo -O -L https://storage.googleapis.com/git-repo-downloads/repo
+          sudo chmod a+rx /usr/local/bin/repo
+
+      - name: Sync recovery source and device tree
+        run: |
+          mkdir work
+          cd work
+          repo init -u $MANIFEST --depth=1
+          repo sync -c -j4 --force-sync --no-clone-bundle --no-tags
+          git clone --depth=1 $DT_LINK $DT_PATH
+
+      - name: Build
+        run: |
+          cd work
+          . build/envsetup.sh && lunch omni_$DEVICE-eng && export ALLOW_MISSING_DEPENDENCIES=true && mka $TARGET
+
+      - name: Release recovery image
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: TWRP_10.0
+          name: TWRP-r7
+          files: | 
+            work/out/target/product/r7/recovery.img
